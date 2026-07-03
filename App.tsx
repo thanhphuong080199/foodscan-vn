@@ -3,8 +3,10 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { HomeScreen } from './src/screens/HomeScreen';
 import { CaptureScreen } from './src/screens/CaptureScreen';
 import { ResultScreen } from './src/screens/ResultScreen';
+import { HistoryScreen } from './src/screens/HistoryScreen';
 import { getDb } from './src/data/db';
 import type { RootStackParamList } from './src/navigation';
 import { colors } from './src/theme';
@@ -22,7 +24,12 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Capture">
+        <Stack.Navigator initialRouteName="Home">
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="Capture"
             component={CaptureScreen}
@@ -33,6 +40,16 @@ export default function App() {
             component={ResultScreen}
             options={{
               title: 'Kết quả',
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+              headerShadowVisible: false,
+            }}
+          />
+          <Stack.Screen
+            name="History"
+            component={HistoryScreen}
+            options={{
+              title: 'Lịch sử quét',
               headerStyle: { backgroundColor: colors.bg },
               headerTintColor: colors.text,
               headerShadowVisible: false,

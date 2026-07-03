@@ -16,6 +16,7 @@ import {
   GeminiError,
   type IdentifyResult,
 } from '../domain/identifyFood';
+import { getScan, saveScan } from '../data/historyRepo';
 import {
   selectAiNutrition,
   selectLocalNutrition,
@@ -62,12 +63,15 @@ function errorMessage(err: unknown): { text: string; canRetry: boolean } {
         return { text: err.message || 'Đã xảy ra lỗi không xác định.', canRetry: true };
     }
   }
+  if (err instanceof Error && err.message) {
+    return { text: err.message, canRetry: true };
+  }
   return { text: 'Đã xảy ra lỗi không xác định.', canRetry: true };
 }
 
 export function ResultScreen({ route, navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { uri, base64, mimeType } = route.params;
+  const { uri, base64, mimeType, historyId } = route.params;
 
   const [result, setResult] = useState<IdentifyResult | null>(null);
   const [error, setError] = useState<{ text: string; canRetry: boolean } | null>(null);
@@ -82,13 +86,34 @@ export function ResultScreen({ route, navigation }: Props) {
       setError(null);
       setResult(null);
       try {
+        // Re-view path: load the saved result from SQLite, no Gemini call.
+        if (historyId != null) {
+          setStatus('Đang tải kết quả đã lưu…');
+          const row = await getScan(historyId);
+          if (!row) throw new Error('Không tìm thấy lượt quét đã lưu.');
+          if (!cancelled) setResult(JSON.parse(row.result_json) as IdentifyResult);
+          return;
+        }
+
+        // Fresh-scan path: identify, then persist on success.
+        if (!base64) throw new Error('Thiếu dữ liệu ảnh.');
         const res = await identifyFood(
-          { base64, mimeType },
+          { base64, mimeType: mimeType ?? 'image/jpeg' },
           (model, attempt) => {
             if (!cancelled) setStatus(`Đang hỏi ${model} (lần ${attempt})…`);
           },
         );
-        if (!cancelled) setResult(res);
+        if (!cancelled) {
+          setResult(res);
+          // Fire-and-forget; a failed save shouldn't block showing the result.
+          saveScan({
+            imageUri: uri,
+            foodCode: res.matched?.food_code ?? null,
+            nameVn: res.matched?.food_name_vn ?? res.gemini.food_name_vn,
+            source: res.source,
+            result: res,
+          }).catch((e) => console.warn('saveScan failed:', e));
+        }
       } catch (e) {
         if (!cancelled) setError(errorMessage(e));
       } finally {
@@ -100,8 +125,8 @@ export function ResultScreen({ route, navigation }: Props) {
     return () => {
       cancelled = true;
     };
-    // Re-run when a new photo comes in; `attempt` bumps a manual retry.
-  }, [base64, mimeType]);
+    // Re-run when a new photo comes in, or when re-viewing a saved scan.
+  }, [base64, mimeType, historyId, uri]);
 
   const retry = () => {
     // Reuse the effect by toggling state: simplest is to re-navigate replace.
