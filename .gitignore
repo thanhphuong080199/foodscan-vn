@@ -46,3 +46,7 @@ data-prep/
 # generated native folders
 /ios
 /android
+
+# raw screen recordings (source for the README demo GIF — the .gif is committed,
+# the multi-MB source .mp4 is not)
+*.mp4
