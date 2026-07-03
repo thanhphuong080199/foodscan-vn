@@ -1,0 +1,126 @@
+# FoodScan VN — PROGRESS
+
+Cross-session tracker. **Read this first each session**, update it before ending.
+See `SPEC.md` for the design. Decisions locked: v1 minimal (Capture→Result only),
+Vietnamese-first UI, Gemini model-fallback chain, chay = Gemini + group-guard.
+
+Legend: `[ ]` todo · `[~]` in progress · `[x]` done
+
+---
+
+## M0 — Planning
+- [x] Inspect `/output/` data (526 foods, 92 cols, 14 groups — clean)
+- [x] Confirm product decisions with user
+- [x] Write `SPEC.md`
+- [x] Write `PROGRESS.md`
+
+## M1 — Project setup  ✅ DONE (boot not yet verified on device)
+- [x] `create-expo-app` (TypeScript) — Expo SDK 57, RN 0.86, React 19; merged into repo root
+- [x] Install deps: expo-camera, expo-image-picker, expo-sqlite,
+      expo-constants, @react-navigation/native + native-stack,
+      react-native-screens, react-native-safe-area-context
+- [x] `src/` folder structure per SPEC §7 (data/, domain/, gemini/ created)
+- [x] `.gitignore` (added `.env`, `.env.*`, `!.env.example`)
+- [x] `.env.example` + `.env` (placeholder key) + `src/config.ts` (model chain from env)
+- [x] `app.json` updated: name/slug/android package + camera & image-picker plugins
+- [ ] App boots on device via `npx expo run:android`  ← NOT yet run
+
+## M2 — Nutrition DB (CSV → SQLite)  ✅ CODE DONE (on-device verify pending)
+- [x] `scripts/gen-seed.mjs`: `vtn_fct_wide.csv` → `assets/nutrition-seed.json`
+      (526 foods, 984 KB; verified food 9001 matches report)
+- [x] `scripts/gen-columns.mjs` → `src/data/nutrientColumns.ts` (87 nutrient cols, generated)
+- [x] `src/data/types.ts`: FoodRow type + ANIMAL_GROUPS constants
+- [x] `src/data/db.ts`: open DB, dynamic `foods` + `app_meta` schema, seed_version guard
+- [x] `src/data/seed.ts`: first-launch bulk import (prepared stmt in a transaction)
+- [x] `src/data/foodRepo.ts`: getByCode, getAllFoods, matchFood (token-overlap)
+- [x] `src/domain/normalize.ts`: diacritic-fold + tokenize + tokenOverlapScore
+- [ ] Verify on device: query 9001 Trứng gà returns correct numbers  ← pending
+
+## M3 — Gemini integration  ✅ CODE DONE (end-to-end device test pending)
+- [x] `src/data/gemini/schema.ts`: types + GEMINI_RESPONSE_SCHEMA (JSON mode)
+- [x] `src/data/gemini/prompt.ts`: prompt-language DECIDED — English
+      instruction scaffolding, Vietnamese output + VN domain terms (per SPEC §9
+      recommendation). A/B on real photos still worth doing once running.
+- [x] `src/data/gemini/client.ts`: fetch + model-fallback chain (429 → next model)
+- [x] `src/domain/vegetarian.ts`: group-guard override
+- [x] `src/domain/identifyFood.ts`: Gemini → local match → merge (source local/ai)
+- [x] **Catalog grounding (approach A)**: inline the 526-row VTN catalog
+      (food_code␉name_vn␉name_en TSV, ~21 KB / ~5–8k tokens) into the prompt so
+      Gemini returns an exact `matched_food_code`. identifyFood prefers
+      `getByCode(code)` (matchVia='code'); falls back to fuzzy `matchFood`
+      (matchVia='fuzzy') when the code is "" or not a real row.
+      Files: schema.ts (+matched_food_code), prompt.ts (buildIdentifyPrompt),
+      foodRepo.ts (getFoodCatalogTsv, cached), client.ts (prompt is now a param).
+- [ ] Test with a sample image end-to-end  ← needs real key + device
+
+## M4 — Capture flow  ✅ CODE DONE (device verify pending)
+- [x] `CaptureScreen`: camera preview (CameraView), shutter, gallery pick
+- [x] Permissions handling (useCameraPermissions + media-library request)
+- [x] Navigate to Result with image uri + base64 + mimeType
+
+## M5 — Result UI  ✅ CODE DONE (device verify pending)
+- [x] `src/domain/nutrientDisplay.ts` whitelist + labels (+ omega-3 EPA+DHA)
+- [x] `src/domain/nutritionSelect.ts` curated + notably-present rule (local & AI)
+- [x] `NutritionTable`, `SourceBadge` (local vs "Ước tính bởi AI"), `TagList`,
+      `DishList`, `VegBadge`, `Section` + `src/theme.ts`
+- [x] `ResultScreen`: identify → render all sections
+- [x] Loading + error states (no net, bad key, models exhausted, bad response)
+- [x] AI-estimate badge shown correctly when no local match
+- [x] `App.tsx` wired: SafeAreaProvider + native-stack (Capture → Result),
+      DB warmed on mount; `tsc --noEmit` passes (strict)
+
+## M6 — Polish
+- [ ] Empty/edge cases, basic styling pass
+- [ ] Disclaimer line (not medical advice)
+- [ ] README run instructions
+
+## Later (post-v1)
+- [ ] Scan history (SQLite + HistoryScreen)
+- [ ] Settings screen (API key + model chain editing)
+- [ ] Full-detail nutrient expander (all 87 fields)
+- [ ] Serving-size scaling, reference-intake thresholds, OFF/USDA
+
+---
+
+## Open questions / concerns
+- **Prompt language** — RESOLVED 2026-07-03: went with English instruction
+  scaffolding + Vietnamese output + VN domain terms (SPEC §9 recommendation).
+  Still worth A/B-ing a couple of real photos once the app runs to confirm
+  cleaner JSON / no Vietnamese quality regression; easily reverted in prompt.ts.
+
+## Next session — START HERE
+The whole v1 code path (M1–M5) is written and type-checks. Nothing has run on a
+device yet. Remaining is verification + first real run:
+1. Read this file + SPEC.md.
+2. Put a REAL key in `.env` (`EXPO_PUBLIC_GEMINI_API_KEY=...`). Confirm the
+   model names in config.ts are valid for the account (free-tier quotas vary).
+3. First real run: `npx expo run:android` (needs Android SDK/emulator or device
+   + custom dev client — camera + sqlite can't use Expo Go).
+4. On-device verification checklist:
+   - App boots (M1).
+   - First launch seeds DB; query food 9001 "Trứng gà" returns correct numbers (M2).
+   - Capture a photo AND pick from gallery → both reach Result.
+   - End-to-end identify works; local-match shows "Dữ liệu địa phương" badge,
+     no-match shows "Ước tính bởi AI" badge (M3/M5).
+   - Error states: airplane mode (network), bad key, blurry photo.
+5. Then A/B the prompt language on a couple of real photos (see above).
+6. Nothing committed to git yet — commit once a device run looks good.
+
+## Session log
+- 2026-07-02: Inspected data, confirmed 4 product decisions, wrote SPEC.md +
+  PROGRESS.md, generated seed. Next: M1 project setup.
+- 2026-07-03: Completed M1 (Expo scaffold merged, deps, folders, config,
+  gitignore/env, app.json plugins). Completed M2 code (seed gen, columns gen,
+  db/seed/repo/normalize) — on-device verify still pending. M3 mostly done
+  (schema, prompt, client with model-fallback, vegetarian guard); remaining:
+  identifyFood.ts, then UI (M4/M5). Nothing committed to git yet.
+  User flagged prompt-language concern (see above). Stopped to continue tomorrow.
+- 2026-07-03 (cont.): Resolved prompt-language (English scaffolding + VN output).
+  Wrote identifyFood.ts (M3), nutrientDisplay + nutritionSelect (M5), all UI
+  components (Section/SourceBadge/NutritionTable/TagList/DishList/VegBadge) +
+  theme.ts, CaptureScreen (M4), ResultScreen with loading/error/AI-badge (M5),
+  and wired App.tsx navigation + DB warm-up. `tsc --noEmit` passes clean.
+  M1–M5 code complete; all on-device verification still pending. Not committed.
+- 2026-07-03 (cont. 2): Added catalog grounding (approach A) — Gemini now
+  receives the full VTN catalog and returns matched_food_code; exact getByCode
+  lookup with fuzzy matchFood as fallback. tsc clean. Still not run on device.

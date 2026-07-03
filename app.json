@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "FoodScan VN",
+    "slug": "foodscan-vn",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.foodscan.vn",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Cho phép FoodScan sử dụng camera để chụp ảnh món ăn."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép FoodScan truy cập thư viện ảnh để chọn ảnh món ăn."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0f177c7c-9ec3-49c4-b8fe-4be5d1726cab"
+      }
+    },
+    "owner": "thanhphuong080199"
+  }
+}
