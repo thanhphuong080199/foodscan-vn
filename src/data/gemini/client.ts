@@ -4,6 +4,7 @@ import { GEMINI_RESPONSE_SCHEMA, type GeminiFoodResult } from './schema';
 export type GeminiErrorCode =
   | 'no_api_key'
   | 'rate_limited' // every model in the chain hit 429/quota
+  | 'server_error' // every model returned 5xx (overloaded / temporarily down)
   | 'network'
   | 'bad_response'
   | 'unknown';
@@ -18,6 +19,21 @@ export class GeminiError extends Error {
 }
 
 type Img = { base64: string; mimeType: string };
+
+// RN's fetch has no built-in timeout: a socket that connects but never gets a
+// response (captive portal, proxy black-hole, WiFi with no real internet) would
+// otherwise hang the request — and the UI spinner — forever. Abort after this.
+const REQUEST_TIMEOUT_MS = 45_000;
+
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function buildBody(img: Img, prompt: string) {
   return {
@@ -66,19 +82,39 @@ export async function identifyWithGemini(
 
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await fetchWithTimeout(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildBody(img, prompt)),
       });
     } catch (e: any) {
-      lastErr = new GeminiError('network', 'Lỗi kết nối mạng. Kiểm tra Internet.');
+      // AbortError = our timeout fired; otherwise a real fetch failure. Both are
+      // network-class and retryable. Log so the Metro console shows the cause.
+      const timedOut = e?.name === 'AbortError';
+      console.warn(
+        `[gemini] ${model} ${timedOut ? 'timed out' : 'fetch failed'}:`,
+        e?.message ?? e,
+      );
+      lastErr = new GeminiError(
+        'network',
+        timedOut
+          ? 'Máy chủ AI không phản hồi (hết thời gian chờ). Kiểm tra Internet.'
+          : 'Lỗi kết nối mạng. Kiểm tra Internet.',
+      );
       continue; // network hiccup — try the next model too
     }
 
     if (res.status === 429) {
       lastErr = new GeminiError('rate_limited', `Model ${model} đã hết hạn mức (429).`);
       continue; // rate-limited: fall back to the next model
+    }
+
+    // 5xx = transient server trouble (503 overloaded, 500/502/504) — the model
+    // is fine, it's just busy/down right now, so fall back to the next one.
+    if (res.status >= 500) {
+      console.warn(`[gemini] ${model} server error ${res.status}`);
+      lastErr = new GeminiError('server_error', `Máy chủ AI lỗi ${res.status} từ ${model}.`);
+      continue;
     }
 
     if (!res.ok) {

@@ -49,6 +49,11 @@ function errorMessage(err: unknown): { text: string; canRetry: boolean } {
           text: 'Tất cả model đều đã hết hạn mức (429). Thử lại sau ít phút.',
           canRetry: true,
         };
+      case 'server_error':
+        return {
+          text: 'Máy chủ AI đang quá tải (503). Thử lại sau ít phút.',
+          canRetry: true,
+        };
       case 'network':
         return {
           text: 'Lỗi kết nối mạng. Kiểm tra Internet rồi thử lại.',
@@ -184,14 +189,14 @@ export function ResultScreen({ route, navigation }: Props) {
         <Text style={styles.nameVn}>{nameVn}</Text>
         {!!nameEn && <Text style={styles.nameEn}>{nameEn}</Text>}
         <View style={styles.badgeRow}>
-          <VegBadge isVegetarian={veg.isVegetarian} overridden={veg.overriddenByGroup} />
-          {!!category && <Text style={styles.category}>{category}</Text>}
+          <VegBadge isVegetarian={veg.isVegetarian} notes={veg.notes} />
+          {!!category && (
+            <View style={styles.categoryChip}>
+              <Text style={styles.categoryChipText}>{category}</Text>
+            </View>
+          )}
         </View>
       </View>
-
-      <Section title="Ăn chay (Chay)">
-        <Text style={styles.body}>{veg.notes || 'Không có ghi chú.'}</Text>
-      </Section>
 
       <Section title="Dinh dưỡng">
         <View style={{ marginBottom: space.md }}>
@@ -252,7 +257,14 @@ const styles = StyleSheet.create({
     marginTop: space.md,
     flexWrap: 'wrap',
   },
-  category: { fontSize: 14, color: colors.textMuted, fontWeight: '600' },
+  categoryChip: {
+    alignSelf: 'flex-start',
+    paddingVertical: space.xs,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
+  },
+  categoryChipText: { fontSize: 14, fontWeight: '700', color: colors.textMuted },
 
   body: { fontSize: 15, lineHeight: 22, color: colors.text },
 
