@@ -1,8 +1,19 @@
 // Shared React Navigation types for the Capture -> Result stack.
 
 export type RootStackParamList = {
+  // Landing hub: choose to scan a new dish or browse saved scans.
+  Home: undefined;
   Capture: undefined;
-  // The captured image travels as a local uri (for preview) plus base64 for the
-  // Gemini call. Camera output is JPEG; gallery supplies its own mimeType.
-  Result: { uri: string; base64: string; mimeType: string };
+  // Two ways to reach Result:
+  //  - Fresh scan: uri (preview) + base64/mimeType (the Gemini call). Camera
+  //    output is JPEG; gallery supplies its own mimeType.
+  //  - Re-view from history: uri + historyId; the saved IdentifyResult is
+  //    loaded from SQLite and no Gemini call is made.
+  Result: {
+    uri: string;
+    base64?: string;
+    mimeType?: string;
+    historyId?: number;
+  };
+  History: undefined;
 };

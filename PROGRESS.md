@@ -75,7 +75,15 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [ ] README run instructions
 
 ## Later (post-v1)
-- [ ] Scan history (SQLite + HistoryScreen)
+- [x] Scan history (SQLite + HistoryScreen) — 2026-07-03
+      `scan_history` table (id, created_at, image_uri, food_code, name_vn,
+      source, result_json) in db.ts migrate; `src/data/historyRepo.ts`
+      (saveScan/getHistory/getScan/deleteScan/clearHistory). ResultScreen saves
+      each successful fresh scan and, given `historyId`, re-loads the saved
+      IdentifyResult from SQLite instead of re-calling Gemini. `HistoryScreen`
+      (FlatList, thumbnail w/ missing-file fallback, SourceBadge, VN time-ago,
+      long-press delete, header "Xóa" clear-all, empty state). Capture screen
+      has a "Lịch sử" button; History registered in App.tsx. tsc clean.
 - [ ] Settings screen (API key + model chain editing)
 - [ ] Full-detail nutrient expander (all 87 fields)
 - [ ] Serving-size scaling, reference-intake thresholds, OFF/USDA
@@ -124,3 +132,17 @@ device yet. Remaining is verification + first real run:
 - 2026-07-03 (cont. 2): Added catalog grounding (approach A) — Gemini now
   receives the full VTN catalog and returns matched_food_code; exact getByCode
   lookup with fuzzy matchFood as fallback. tsc clean. Still not run on device.
+- 2026-07-03 (cont. 3): User verified the app runs on device (v1 Capture→Result
+  works end-to-end). Implemented Scan History (first post-v1 feature): db
+  migration + historyRepo, save-on-success + historyId re-view path in
+  ResultScreen, HistoryScreen, Capture "Lịch sử" entry point, App.tsx route.
+  tsc clean; not yet device-verified. Note: history thumbnails reuse the
+  original camera/gallery uri (may 404 if OS clears cache — UI falls back to a
+  placeholder; copying to persistent storage deferred). Not committed to git.
+- 2026-07-03 (cont. 4): Nav restructured — added `HomeScreen` as the landing
+  hub (initialRoute Home). Flow is now Home → {Capture → Result | History}.
+  Home shows the brand mark (assets/icon.png), tagline, a primary "Quét món
+  mới" card → Capture, and a "Lịch sử quét" card → History with a saved-count
+  subtitle (getHistoryCount). Capture's top-bar history button replaced with a
+  back button. Rationale: first launch no longer drops straight into an
+  unexplained camera-permission prompt. tsc clean; device-verify pending.

@@ -103,8 +103,17 @@ export function CaptureScreen({ navigation }: Props) {
       />
 
       <View style={[styles.topBar, { paddingTop: insets.top + space.sm }]}>
-        <Text style={styles.brand}>FoodScan VN</Text>
-        <Text style={styles.hint}>Đưa máy ảnh vào món ăn rồi chụp</Text>
+        <Pressable
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          hitSlop={8}
+        >
+          <Text style={styles.backGlyph}>‹</Text>
+        </Pressable>
+        <View style={styles.topBarText}>
+          <Text style={styles.brand}>FoodScan VN</Text>
+          <Text style={styles.hint}>Đưa máy ảnh vào món ăn rồi chụp</Text>
+        </View>
       </View>
 
       <View style={[styles.controls, { paddingBottom: insets.bottom + space.xl }]}>
@@ -148,9 +157,22 @@ const styles = StyleSheet.create({
     marginBottom: space.xl,
   },
   topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
     paddingHorizontal: space.lg,
     paddingBottom: space.md,
   },
+  topBarText: { flex: 1 },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backGlyph: { color: '#fff', fontSize: 26, lineHeight: 28, marginTop: -2 },
   brand: { color: '#fff', fontSize: 18, fontWeight: '800' },
   hint: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 },
   controls: {

@@ -31,6 +31,16 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
       ${foodsColumnDefs()}
     );
     CREATE INDEX IF NOT EXISTS idx_foods_name_vn ON foods(food_name_vn);
+    CREATE TABLE IF NOT EXISTS scan_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      created_at INTEGER NOT NULL,
+      image_uri TEXT,
+      food_code TEXT,
+      name_vn TEXT,
+      source TEXT,
+      result_json TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_scan_created ON scan_history(created_at DESC);
   `);
 }
 
