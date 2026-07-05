@@ -8,7 +8,7 @@ name: Build shareable APK
 # Trigger it from the Expo dashboard, or with:  eas workflow:run build-apk.yml
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   build_android_preview:
