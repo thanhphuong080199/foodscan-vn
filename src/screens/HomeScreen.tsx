@@ -59,6 +59,17 @@ export function HomeScreen({ navigation }: Props) {
 
         <Pressable
           style={({ pressed }) => [styles.secondaryCard, pressed && styles.pressed]}
+          onPress={() => navigation.navigate('Search')}
+        >
+          <Text style={styles.secondaryGlyph}>🔍</Text>
+          <View style={styles.cardText}>
+            <Text style={styles.secondaryTitle}>Tra cứu món ăn</Text>
+            <Text style={styles.secondarySub}>Tìm dinh dưỡng theo tên món</Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.secondaryCard, pressed && styles.pressed]}
           onPress={() => navigation.navigate('History')}
         >
           <Text style={styles.secondaryGlyph}>🕗</Text>

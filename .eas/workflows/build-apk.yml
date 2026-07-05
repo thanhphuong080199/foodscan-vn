@@ -1,0 +1,19 @@
+name: Build shareable APK
+
+# Manual-only: run this when a change touches native code (new expo modules,
+# permissions, app icon/splash, SDK bump, expo-updates config) — anything the
+# OTA-on-main workflow can't ship. Produces an internal-distribution APK on the
+# "preview" channel, which is the build the OTA workflow then updates.
+#
+# Trigger it from the Expo dashboard, or with:  eas workflow:run build-apk.yml
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_android_preview:
+    name: Build Android share APK (preview)
+    type: build
+    params:
+      platform: android
+      profile: preview
