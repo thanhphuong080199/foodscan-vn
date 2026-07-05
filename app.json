@@ -6,6 +6,12 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0f177c7c-9ec3-49c4-b8fe-4be5d1726cab"
+    },
     "android": {
       "package": "com.foodscan.vn",
       "adaptiveIcon": {

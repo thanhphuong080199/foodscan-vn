@@ -16,4 +16,8 @@ export type RootStackParamList = {
     historyId?: number;
   };
   History: undefined;
+  // Manual name search over the local VTN database (no image, no Gemini).
+  Search: undefined;
+  // Local-only nutrition detail reached from Search, keyed by VTN food_code.
+  FoodDetail: { foodCode: string };
 };

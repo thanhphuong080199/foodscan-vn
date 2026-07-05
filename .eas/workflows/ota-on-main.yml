@@ -1,0 +1,23 @@
+name: OTA update on merge to main
+
+# Every push to main publishes a JS/asset OTA update to the "preview" channel,
+# so the shareable APKs (built with the `preview` profile) pick it up on next
+# launch — no rebuild, no store submission.
+#
+# Note: with runtimeVersion policy "fingerprint" (app.json), an update only
+# applies to builds whose native fingerprint matches. If a commit changes native
+# code, this update simply won't reach older builds — run the manual
+# "Build shareable APK" workflow to produce a fresh build for those changes.
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish_update:
+    name: Publish OTA update (preview channel)
+    type: update
+    params:
+      platform: all
+      channel: preview
+      # message omitted -> defaults to the triggering commit message.

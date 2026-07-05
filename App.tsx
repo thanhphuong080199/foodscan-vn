@@ -7,6 +7,8 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { CaptureScreen } from './src/screens/CaptureScreen';
 import { ResultScreen } from './src/screens/ResultScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
+import { SearchScreen } from './src/screens/SearchScreen';
+import { FoodDetailScreen } from './src/screens/FoodDetailScreen';
 import { getDb } from './src/data/db';
 import type { RootStackParamList } from './src/navigation';
 import { colors } from './src/theme';
@@ -50,6 +52,21 @@ export default function App() {
             component={HistoryScreen}
             options={{
               title: 'Lịch sử quét',
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+              headerShadowVisible: false,
+            }}
+          />
+          <Stack.Screen
+            name="Search"
+            component={SearchScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="FoodDetail"
+            component={FoodDetailScreen}
+            options={{
+              title: 'Dinh dưỡng',
               headerStyle: { backgroundColor: colors.bg },
               headerTintColor: colors.text,
               headerShadowVisible: false,
