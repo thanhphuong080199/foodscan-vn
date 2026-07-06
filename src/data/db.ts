@@ -41,6 +41,11 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
       result_json TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_scan_created ON scan_history(created_at DESC);
+    CREATE TABLE IF NOT EXISTS image_cache (
+      food_code TEXT PRIMARY KEY NOT NULL,
+      json TEXT NOT NULL,
+      fetched_at INTEGER NOT NULL
+    );
   `);
 }
 
