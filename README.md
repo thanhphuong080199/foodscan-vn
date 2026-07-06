@@ -23,6 +23,9 @@ shows:
 - **Benefits, risks, and suggested Vietnamese dishes.**
 - **Scan history** — past scans are saved locally (SQLite) and re-viewable without
   re-calling Gemini.
+- **Name search + food photos** — look up any food by Vietnamese or English name
+  without a photo; the detail screen shows Pixabay photos of the food (searched by
+  its English name, cached locally for 24h) so you know what it looks like.
 
 The UI is Vietnamese-first. Everything runs on-device — no backend, no auth, no
 cloud sync. See [`SPEC.md`](SPEC.md) for the full design and [`PROGRESS.md`](PROGRESS.md)
@@ -42,6 +45,9 @@ for build status.
 
 - Node.js (LTS) and npm
 - A free **Gemini API key** — <https://aistudio.google.com/apikey>
+- (Optional) a free **Pixabay API key** for food photos —
+  <https://pixabay.com/api/docs/>. Without it the app works fine; the photo
+  strip on the food-detail screen just stays hidden.
 - Android device or emulator. Camera + SQLite need a **custom dev client**
   (not Expo Go) — the app runs via `expo run:android`.
 - Expo SDK 54 · React Native 0.81 · React 19
@@ -52,9 +58,10 @@ for build status.
 # 1. Install dependencies
 npm install
 
-# 2. Configure your API key
+# 2. Configure your API keys
 cp .env.example .env
 #   then edit .env and set EXPO_PUBLIC_GEMINI_API_KEY=<your key>
+#   optionally set EXPO_PUBLIC_PIXABAY_API_KEY=<your key> for food photos
 
 # 3. Build and run on a connected Android device / emulator
 npm run android

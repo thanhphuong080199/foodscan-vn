@@ -3,6 +3,7 @@
 Cross-session tracker. **Read this first each session**, update it before ending.
 See `SPEC.md` for the design. Decisions locked: v1 minimal (Capture→Result only),
 Vietnamese-first UI, Gemini model-fallback chain, chay = Gemini + group-guard.
+Project is on **Expo SDK 54** (RN 0.81, React 19) — earlier SDK 57 mentions were wrong.
 
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
@@ -84,6 +85,18 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
       (FlatList, thumbnail w/ missing-file fallback, SourceBadge, VN time-ago,
       long-press delete, header "Xóa" clear-all, empty state). Capture screen
       has a "Lịch sử" button; History registered in App.tsx. tsc clean.
+- [x] Food photos on FoodDetail (Pixabay) — 2026-07-06
+      Searches Pixabay by the food's English name (head phrase before any
+      comma/parenthesis; `image_type=photo&category=food&safesearch=true`).
+      `src/data/pixabay/client.ts` (silent-fail client, 15s timeout),
+      `src/data/imageRepo.ts` + `image_cache` SQLite table (24h TTL — required
+      by Pixabay API terms; empty results cached; stale cache served offline),
+      `FoodImageStrip` component (horizontal thumbs + required "Ảnh minh họa
+      từ Pixabay" credit; hides itself when no key / no EN name / no hits).
+      Key: `EXPO_PUBLIC_PIXABAY_API_KEY` in `.env` AND in EAS env vars
+      (preview + production environments, sensitive). Detail screen only — no
+      thumbs in search list (would blow the 100 req/min Pixabay limit).
+      Plain RN `Image` on purpose: no new native module keeps it OTA-shippable.
 - [ ] Settings screen (API key + model chain editing)
 - [ ] Full-detail nutrient expander (all 87 fields)
 - [ ] Serving-size scaling, reference-intake thresholds, OFF/USDA
@@ -146,3 +159,10 @@ device yet. Remaining is verification + first real run:
   subtitle (getHistoryCount). Capture's top-bar history button replaced with a
   back button. Rationale: first launch no longer drops straight into an
   unexplained camera-permission prompt. tsc clean; device-verify pending.
+- 2026-07-06: Pixabay food photos on FoodDetail (see "Later" entry above for
+  file-level detail). Fixed AGENTS.md to point at Expo v54 docs (was v57;
+  project is SDK 54). Verified the Pixabay key live (test query returned
+  hits) and `tsc --noEmit` clean. EAS env configured via `eas env:create`:
+  preview now has GEMINI+PIXABAY keys, production (previously empty) got both
+  too. Feature is JS-only → ships via the OTA-on-main workflow; existing
+  preview APKs pick it up without a rebuild. Device verify pending.

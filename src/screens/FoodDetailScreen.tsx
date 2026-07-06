@@ -11,6 +11,7 @@ import { Section } from '../components/Section';
 import { SourceBadge } from '../components/SourceBadge';
 import { NutritionTable } from '../components/NutritionTable';
 import { VegBadge } from '../components/VegBadge';
+import { FoodImageStrip } from '../components/FoodImageStrip';
 import { colors, radius, space } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FoodDetail'>;
@@ -75,6 +76,8 @@ export function FoodDetailScreen({ route }: Props) {
           )}
         </View>
       </View>
+
+      <FoodImageStrip foodCode={food.food_code} nameEn={food.food_name_en} />
 
       <Section title="Dinh dưỡng">
         <View style={{ marginBottom: space.md }}>
