@@ -24,16 +24,12 @@ export const config = {
   // Local-name fuzzy match: token-overlap score below this => fall back to AI estimate.
   foodMatchThreshold: 0.5,
 
-  pixabayApiKey: process.env.EXPO_PUBLIC_PIXABAY_API_KEY ?? '',
-  pixabayBaseUrl: 'https://pixabay.com/api/',
+  // Food photos come from Wikimedia Commons (encyclopedic, correctly labeled,
+  // no API key). See src/data/wikimedia/client.ts.
+  wikimediaBaseUrl: 'https://commons.wikimedia.org/w/api.php',
 } as const;
 
 export function hasApiKey(): boolean {
   const k = config.geminiApiKey;
-  return !!k && k !== 'your_key_here';
-}
-
-export function hasPixabayKey(): boolean {
-  const k = config.pixabayApiKey;
   return !!k && k !== 'your_key_here';
 }

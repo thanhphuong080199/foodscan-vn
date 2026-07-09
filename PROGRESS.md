@@ -85,18 +85,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
       (FlatList, thumbnail w/ missing-file fallback, SourceBadge, VN time-ago,
       long-press delete, header "Xóa" clear-all, empty state). Capture screen
       has a "Lịch sử" button; History registered in App.tsx. tsc clean.
-- [x] Food photos on FoodDetail (Pixabay) — 2026-07-06
-      Searches Pixabay by the food's English name (head phrase before any
-      comma/parenthesis; `image_type=photo&category=food&safesearch=true`).
-      `src/data/pixabay/client.ts` (silent-fail client, 15s timeout),
-      `src/data/imageRepo.ts` + `image_cache` SQLite table (24h TTL — required
-      by Pixabay API terms; empty results cached; stale cache served offline),
-      `FoodImageStrip` component (horizontal thumbs + required "Ảnh minh họa
-      từ Pixabay" credit; hides itself when no key / no EN name / no hits).
-      Key: `EXPO_PUBLIC_PIXABAY_API_KEY` in `.env` AND in EAS env vars
-      (preview + production environments, sensitive). Detail screen only — no
-      thumbs in search list (would blow the 100 req/min Pixabay limit).
-      Plain RN `Image` on purpose: no new native module keeps it OTA-shippable.
+- [x] Food photos on FoodDetail (Wikimedia Commons) — 2026-07-09
+      Was Pixabay (2026-07-06) but stock-photo relevance was poor for
+      ingredient-level names. Switched to Wikimedia Commons: encyclopedic,
+      correctly-labeled images, and no API key. `src/data/wikimedia/client.ts`
+      queries the Commons MediaWiki API (`generator=search` over the File
+      namespace, `iiurlwidth=480`), filters results to raster photos
+      (jpeg/png/webp/gif — drops SVG diagrams and PDF book scans), and orders
+      by search `index`. The query cleaner strips preparation/state qualifiers
+      ("Under milled, home-pounded rice" → "rice") instead of naively cutting
+      at the first comma, which fixed the worst mismatches. `imageRepo.ts` +
+      `image_cache` SQLite table unchanged (24h TTL, empty cached, stale served
+      offline); the key gate is gone. `FoodImageStrip` credit now "Ảnh minh
+      họa từ Wikimedia Commons". Plain RN `Image`, JS-only → still OTA-shippable.
 - [ ] Settings screen (API key + model chain editing)
 - [ ] Full-detail nutrient expander (all 87 fields)
 - [ ] Serving-size scaling, reference-intake thresholds, OFF/USDA
@@ -166,3 +167,12 @@ device yet. Remaining is verification + first real run:
   preview now has GEMINI+PIXABAY keys, production (previously empty) got both
   too. Feature is JS-only → ships via the OTA-on-main workflow; existing
   preview APKs pick it up without a rebuild. Device verify pending.
+- 2026-07-09: Replaced Pixabay food photos with Wikimedia Commons (see "Later"
+  entry above for detail). Reason: Pixabay stock relevance was unreliable for
+  the VTN ingredient names. New `src/data/wikimedia/client.ts` (Commons
+  MediaWiki search, no API key, raster-only filter, qualifier-stripping query
+  cleaner); removed `src/data/pixabay/` and all `PIXABAY` config/env/key gates.
+  Validated live against sample foods (glutinous rice, foxtail millet, water
+  spinach, maize) — results on-topic. `tsc --noEmit` clean. JS-only → OTA-
+  shippable; EAS PIXABAY env vars now unused (can be deleted later). Device
+  verify pending.

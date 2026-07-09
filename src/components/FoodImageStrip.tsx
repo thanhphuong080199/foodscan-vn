@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
 import { getFoodImages } from '../data/imageRepo';
-import type { FoodImage } from '../data/pixabay/client';
+import type { FoodImage } from '../data/wikimedia/client';
 import { colors, radius, space } from '../theme';
 
 const THUMB_W = 160;
 const THUMB_H = 120;
 
-// Horizontal strip of Pixabay photos so the user can see what a food looks
+// Horizontal strip of Wikimedia Commons photos so the user can see what a food looks
 // like. Decorative by design: renders nothing while loading fails, when the
 // key is missing, or when the food has no usable English name — the screen
 // must read the same as before this feature existed.
@@ -51,8 +51,8 @@ export function FoodImageStrip({
           />
         )}
       />
-      {/* Credit required by the Pixabay API terms. */}
-      <Text style={styles.credit}>Ảnh minh họa từ Pixabay</Text>
+      {/* Attribution for the Commons contributors whose photos we show. */}
+      <Text style={styles.credit}>Ảnh minh họa từ Wikimedia Commons</Text>
     </View>
   );
 }
